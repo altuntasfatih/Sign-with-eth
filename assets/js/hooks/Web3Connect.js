@@ -1,25 +1,19 @@
 
+
 let Web3Connect = {
   connection: null,
   web3Provider: null,
   async mounted() {
     await this.lazyLoadWeb3Resources();
 
-    window.addEventListener("phx:web3-connect:open-redirect", (event) => {
-      const url = event.target.dataset.url;
-      console.log(event)
-    });
-
-    this.handleEvent("web3-connect:connect-provider-client", (e) => {
-      this.liveSocket.execJS(this.el, this.el.dataset.hideSnackbarInstant);
+    this.handleEvent("web3-connect:select-provider", (e) => {
+      console.log("provider")
+      console.log(e)
       this.handleConnectWeb3Provider(e);
     });
 
-    this.handleEvent(
-      "web3-connect:sign-message-client",
+    this.handleEvent("web3-connect:sign-message",
       async ({ message }) => {
-        console.log("sign a message")
-
         console.log(message)
         await this.signMessage(message);
       }
@@ -27,21 +21,6 @@ let Web3Connect = {
     this.handleEvent("web3-connect:error", (e) => this.handleConnectError(e));
     this.handleEvent("web3-connect:disconnect-wallet", () => {
       this.disconnectWallet();
-    });
-    this.handleEvent("web3-connect:close-modal", (_e) => {
-      this.liveSocket.execJS(this.el, this.el.dataset.showSnackbar);
-      document
-        .querySelectorAll(".web3-connect-button")
-        .forEach((el) => el.classList.add("hidden"));
-      setTimeout(() => {
-        document
-          .querySelector("#web3-connect-modal")
-          .dispatchEvent(new CustomEvent("moonds:drawer:close"));
-      }, 2000);
-
-      setTimeout(() => {
-        this.liveSocket.execJS(this.el, this.el.dataset.hideSnackbar);
-      }, 2000);
     });
   },
   async lazyLoadWeb3Resources() {
@@ -55,6 +34,7 @@ let Web3Connect = {
       providers: this.getWeb3WalletExtensions(),
     });
   },
+
   async reconnected() {
     await this.reconnectIfConnectionExists();
   },
@@ -65,7 +45,7 @@ let Web3Connect = {
       this.sendErrorEvent(error);
     } finally {
       if (this.connection) {
-        setTimeout(() => this.sendSignMessageEvent(provider), 3000);
+        setTimeout(() => this.sendConnectedMessage(provider), 3000);
       }
     }
   },
@@ -102,13 +82,13 @@ let Web3Connect = {
     }
 
     if (this.connection) {
-      this.sendSignMessageEvent(provider);
+      this.sendConnectedMessage(provider);
     } else {
       await this.connectWallet(provider);
     }
   },
-  sendSignMessageEvent(provider) {
-    this.pushEventTo(this.el, "web3-connect:sign-message", {
+  sendConnectedMessage(provider) {
+    this.pushEventTo(this.el, "web3-connect:connected", {
       provider: {
         id: provider.id,
         address: this.connection.accounts[0],

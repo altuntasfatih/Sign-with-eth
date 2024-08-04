@@ -37,9 +37,10 @@ config :esbuild,
   default: [
     args: ~w(
       js/app.js
-      web3/index.js
       --bundle
+      --chunk-names=chunks/[name]-[hash]
       --target=ES2020
+      --splitting
       --format=esm
       --outdir=../priv/static/assets
       --external:/fonts/* --external:/images/*),
