@@ -8,6 +8,7 @@ defmodule SignEthWeb.SignMessage do
       assign(socket, :address, nil)
       |> assign(:provider, nil)
       |> assign(:message, @default_message)
+      |> assign(:signature, nil)
 
     {:ok, socket}
   end
@@ -42,6 +43,14 @@ defmodule SignEthWeb.SignMessage do
           Sign
         </.button>
       </div>
+
+      <div class="flex justify-center items-center">
+        <div :if={@signature != nil}>
+          <.label>
+            Signature: <%= @signature %>
+          </.label>
+        </div>
+      </div>
     </div>
     """
   end
@@ -59,19 +68,27 @@ defmodule SignEthWeb.SignMessage do
   end
 
   def handle_event(
+        "web3-connect:signed-message",
+        %{"address" => _, "signature" => signature},
+        socket
+      ) do
+    {:noreply, assign(socket, :signature, signature)}
+  end
+
+  def handle_event(
         "web3-connect:connected",
         %{"provider" => %{"address" => address, "id" => provider_id, "is_connected" => true}},
         socket
       ) do
     socket =
-      assign(socket, :address, address)
+      socket
+      |> assign(:address, address)
       |> assign(:provider, provider_id)
 
     {:noreply, socket}
   end
 
-  def handle_event("web3-connect:detected-providers", params, socket) do
-    IO.inspect(params)
+  def handle_event("web3-connect:detected-providers", _, socket) do
     {:noreply, socket}
   end
 end

@@ -73,7 +73,6 @@ let Web3Connect = {
     const { provider: providerId } = event;
     this.connection = this.getExistingConnection(providerId);
     let provider = this.findProvider(providerId);
-    // If user somehow clicks on provider that we didn't detect
     if (!provider) {
       this.pushEventTo(this.el, "web3-connect:injected-provider-not-detected", {
         provider: providerId,
